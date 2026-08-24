@@ -1098,23 +1098,287 @@ textarea.form-control {
   opacity: 0.5;
 }
 
-/* Utilities & Responsiveness */
-@media (max-width: 992px) {
+/* ==========================================================================
+   Comprehensive Responsive Layout System (Desktop, Tablet & Smartphone)
+   ========================================================================== */
+
+/* 1. Tablet Screens (768px to 1024px) */
+@media (max-width: 1024px) {
+  :root {
+    --sidebar-width: 80px;
+  }
+
   .sidebar {
     width: 80px;
-    padding: 20px 10px;
+    padding: 20px 8px;
   }
-  .brand-title, .nav-item span, .quick-stats-lbl {
+
+  .brand-name, .nav-item span, .quick-stats-lbl, .quick-stats-box .stat-title {
     display: none;
   }
+
+  .logo-container {
+    justify-content: center;
+  }
+
+  .nav-item {
+    justify-content: center;
+    padding: 14px 0;
+  }
+
   .main-content {
     margin-left: 80px;
+    padding: 24px 20px;
+  }
+
+  .grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .orange-tree-card {
     padding: 20px;
+    gap: 20px;
   }
-  .grid-2, .grid-3, .grid-4 {
-    grid-template-columns: 1fr;
+
+  .annual-evaluator-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 20px;
   }
+
   .annual-months-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* 2. Smartphone Screens (< 768px) */
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 0px;
+  }
+
+  body {
+    padding-bottom: 70px; /* Space for Mobile Bottom Nav Bar */
+  }
+
+  /* Transform Sidebar into Off-Canvas / Top Mobile Header */
+  .sidebar {
+    width: 100%;
+    height: 60px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: auto;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    border-right: none;
+    border-bottom: 1px solid var(--border-glass-bright);
+    background: rgba(13, 19, 33, 0.95);
+    z-index: 900;
+  }
+
+  .sidebar-header {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+    border-bottom: none !important;
+  }
+
+  .brand-name {
+    display: inline-block !important;
+    font-size: 1.15rem !important;
+  }
+
+  .sidebar-nav {
+    display: none; /* Hidden from top, rendered in Mobile Bottom Bar */
+  }
+
+  .sidebar-footer {
+    display: none;
+  }
+
+  .btn-toggle-sidebar {
+    display: none;
+  }
+
+  /* Main Content Full Width on Mobile */
+  .main-content {
+    margin-left: 0;
+    margin-top: 60px;
+    padding: 16px 12px;
+  }
+
+  /* Header & Page Title Stacking */
+  .header-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .page-title h1 {
+    font-size: 1.45rem;
+  }
+
+  .header-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .header-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Responsive Grids to 1 Column */
+  .grid-2, .grid-3, .grid-4 {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  /* Orange Citrus Tree Widget Mobile Layout */
+  .orange-tree-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 20px 14px;
+    gap: 14px;
+  }
+
+  .orange-tree-svg-container {
+    width: 110px;
+    height: 120px;
+  }
+
+  .orange-tree-info {
+    width: 100%;
+  }
+
+  .orange-tree-info h2 {
+    font-size: 1.15rem !important;
+  }
+
+  /* Category Matrix & Habit Items Mobile Layout */
+  .category-group-box {
+    flex-direction: column;
+  }
+
+  .category-vertical-label {
+    width: 100%;
+    height: 38px;
+    writing-mode: horizontal-tb;
+    transform: none;
+    justify-content: center;
+    font-size: 0.8rem;
+    padding: 0;
+  }
+
+  .category-group-content {
+    padding: 12px;
+  }
+
+  .check-item {
+    padding: 12px 10px;
+    gap: 10px;
+  }
+
+  .habit-days {
+    overflow-x: auto;
+    padding-bottom: 4px;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .day-pill {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+  }
+
+  /* Calendar Responsive Grid */
+  .calendar-month-grid {
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+  }
+
+  .calendar-day-cell {
+    min-height: 65px;
+    padding: 4px;
+  }
+
+  .day-number {
+    font-size: 0.75rem;
+  }
+
+  .day-completion-badge {
+    font-size: 0.62rem;
+  }
+
+  .calendar-habit-pill {
+    padding: 2px 4px;
+    font-size: 0.65rem;
+  }
+
+  /* Modal Responsive Layout */
+  .modal-card {
+    width: 94vw;
+    padding: 20px 16px;
+    border-radius: var(--radius-md);
+  }
+
+  /* Mobile Bottom Navigation Bar */
+  .mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 62px;
+    background: rgba(13, 19, 33, 0.96);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border-glass-bright);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    z-index: 1000;
+    padding: 0 4px;
+  }
+
+  .mobile-nav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    flex: 1;
+    height: 100%;
+    color: var(--text-muted);
+    font-size: 0.68rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+
+  .mobile-nav-btn.active {
+    color: #38bdf8;
+  }
+
+  .mobile-nav-btn i {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Hide Mobile Bottom Nav on Desktop/Tablet */
+@media (min-width: 769px) {
+  .mobile-bottom-nav {
+    display: none !important;
+  }
+}
+

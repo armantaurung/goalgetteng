@@ -2610,6 +2610,7 @@
 
       this.initSidebar();
       this.initSidebarToggle();
+      this.initMobileNav();
       this.initCloudSyncBar();
       this.initDailyAutoRefresh();
       this.initAutoCloudSyncTimer();
@@ -2721,12 +2722,32 @@
       }
     }
 
+    initMobileNav() {
+      const mobileNav = document.getElementById('mobile-bottom-nav');
+      if (mobileNav) {
+        mobileNav.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            this.switchTab(btn.dataset.tab);
+          });
+        });
+      }
+    }
+
     switchTab(tabId) {
       this.currentTab = tabId;
       this.sidebarNav.querySelectorAll('.nav-item').forEach(btn => {
         if (btn.dataset.tab === tabId) btn.classList.add('active');
         else btn.classList.remove('active');
       });
+
+      const mobileNav = document.getElementById('mobile-bottom-nav');
+      if (mobileNav) {
+        mobileNav.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+          if (btn.dataset.tab === tabId) btn.classList.add('active');
+          else btn.classList.remove('active');
+        });
+      }
+
       this.renderCurrentTab();
     }
 
