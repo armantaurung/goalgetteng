@@ -3,66 +3,73 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GoalForge - Pelacak Goal & Habit Harian</title>
-  <meta name="description" content="Aplikasi pelacak goal utama, milestone kecil, dan kebiasaan harian dengan estetika glassmorphism modern." />
+  <title>GoalForge - Pelacak Goal Utama & Habit Harian 🎯</title>
+  <meta name="description" content="Aplikasi web pelacak Goal Utama, Sub-Goal, dan Habit Harian dengan visualisasi Pohon Jeruk, Kalender 365 Hari, Integrasi Google Calendar, dan Cloud Sync HP-Laptop." />
+  <meta name="theme-color" content="#0f172a" />
   
-  <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎯</text></svg>" />
-
-  <!-- Google Fonts -->
+  <!-- Modern Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
-  <!-- Lucide Icons -->
+  <!-- Lucide Icons & Canvas Confetti -->
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-  <!-- Canvas Confetti for Celebrations -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
-
-  <!-- Custom Glassmorphism Styling -->
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="app-container">
-    <!-- Sidebar Navigation -->
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-logo">
-          <i data-lucide="target" style="width: 24px; height: 24px;"></i>
+  <div class="app-layout">
+    <!-- Collapsible Modern Glassmorphism Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-container">
+          <div class="logo-icon">🎯</div>
+          <div class="logo-text">
+            <span class="brand-name">GoalForge</span>
+            <span class="brand-tagline">Goal & Habit Tracker</span>
+          </div>
         </div>
-        <div class="brand-title">GoalForge</div>
-        <button class="btn-toggle-sidebar" id="btn-toggle-sidebar" title="Perkecil / Perbesar Menu Sidebar" style="margin-left: auto;">
-          <i data-lucide="chevron-left" id="sidebar-toggle-icon" style="width: 18px; height: 18px;"></i>
+        <button class="btn-toggle-sidebar" id="btn-toggle-sidebar" title="Perkecil / Perbesar Sidebar">
+          <i data-lucide="chevron-left" id="sidebar-toggle-icon"></i>
         </button>
       </div>
 
-      <nav class="nav-menu" id="sidebar-nav" aria-label="Navigasi Utama">
-        <!-- Rendered by JS -->
+      <nav class="sidebar-nav" id="sidebar-nav">
+        <!-- Dynamic Nav Links rendered by JS -->
       </nav>
 
       <div class="sidebar-footer">
         <div class="quick-stats-box">
-          <div class="quick-stats-val" id="quick-stats-val">0/0</div>
-          <div class="quick-stats-lbl">Habit Hari Ini</div>
+          <div class="stat-title">Habit Hari Ini</div>
+          <div class="stat-value" id="quick-stats-val">0/0</div>
         </div>
       </div>
     </aside>
 
-    <!-- Main View Content -->
-    <main class="main-content" id="view-content">
-      <!-- Views rendered dynamically by JS -->
+    <!-- Main View Content Area -->
+    <main class="main-content">
+      <!-- Top Utility Header with Cloud Sync Status -->
+      <div style="display: flex; justify-content: flex-end; margin-bottom: 12px;">
+        <button class="btn btn-secondary" id="btn-open-cloud-sync" style="padding: 6px 14px; font-size: 0.82rem; border-color: rgba(56, 189, 248, 0.4); color: #38bdf8;">
+          <i data-lucide="cloud-lightning"></i> <span id="cloud-sync-status-text">☁️ Cloud Sync (HP ↔ Laptop)</span>
+        </button>
+      </div>
+
+      <div id="view-content">
+        <!-- Dynamic View Content rendered by JS -->
+      </div>
     </main>
   </div>
 
-  <!-- Global Modal Popup Container -->
-  <div class="modal-backdrop" id="modal-backdrop" role="dialog" aria-modal="true">
+  <!-- Reusable Glassmorphism Modal Backdrop -->
+  <div class="modal-backdrop" id="modal-backdrop">
     <div class="modal-card" id="modal-card-content">
-      <!-- Modal form content rendered by JS -->
+      <!-- Dynamic Modal Form Content -->
     </div>
   </div>
 
-  <!-- Main JavaScript App -->
+  <!-- Application Bundle -->
   <script src="app.js"></script>
 </body>
 </html>
