@@ -718,6 +718,9 @@
           <p style="color: var(--text-main); font-weight: 600; font-size: 1.05rem;">📅 ${fullDateText}</p>
         </div>
         <div class="header-actions">
+          <button class="btn btn-secondary" id="btn-mass-habit-today" style="border-color: rgba(52, 211, 153, 0.4); color: #34d399;">
+            <i data-lucide="upload-cloud"></i> Mass Upload Habit
+          </button>
           <button class="btn btn-google" id="btn-export-gcal-today">
             <i data-lucide="calendar"></i> Ke Google Calendar
           </button>
@@ -879,6 +882,7 @@
     });
 
     container.querySelector('#btn-add-habit-today')?.addEventListener('click', () => onAction('open-habit-modal'));
+    container.querySelector('#btn-mass-habit-today')?.addEventListener('click', () => onAction('open-mass-habit-modal'));
     container.querySelector('#btn-goto-goals')?.addEventListener('click', () => onAction('switch-tab', 'goals'));
     container.querySelector('#btn-export-gcal-today')?.addEventListener('click', () => {
       GoogleCalendar.exportICalendar(habits, goals);
@@ -1916,6 +1920,9 @@
           <p>Klik setiap habit untuk melihat heatmap perkembangan setahun penuh. Klik kotak tanggal untuk mencentang/membatalkan.</p>
         </div>
         <div class="header-actions">
+          <button class="btn btn-secondary" id="btn-mass-habit-cal" style="border-color: rgba(52, 211, 153, 0.4); color: #34d399;">
+            <i data-lucide="upload-cloud"></i> Mass Upload Habit
+          </button>
           <button class="btn btn-primary" id="btn-add-habit-cal">
             <i data-lucide="plus"></i> Tambah Habit
           </button>
@@ -2006,8 +2013,9 @@
       }).join('')}
     `;
 
-    // Event: Add habit
+    // Event: Add habit & Mass Upload
     container.querySelector('#btn-add-habit-cal')?.addEventListener('click', () => onAction('open-habit-modal'));
+    container.querySelector('#btn-mass-habit-cal')?.addEventListener('click', () => onAction('open-mass-habit-modal'));
 
     // Event: Toggle expand/collapse each habit heatmap
     container.querySelectorAll('.habit-year-header').forEach(header => {
@@ -2691,6 +2699,146 @@
           closeModal();
           onSave();
         });
+      },
+
+      openMassHabitModal() {
+        const goals = Storage.getGoals();
+        const html = `
+          <div class="modal-header">
+            <h3>📥 Import & Input Massal Habit (Mass Upload) ⚡</h3>
+            <button class="close-btn">&times;</button>
+          </div>
+          <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5;">
+            Masukkan daftar habit harian secara sekaligus! Anda bisa **menempelkan (paste) banyak daftar habit per baris** atau **mengunggah file (TXT / CSV / JSON)**.
+          </p>
+
+          <form id="form-mass-habit">
+            <div class="form-group">
+              <label>📝 Daftar Nama Habit (1 Habit Per Baris)</label>
+              <textarea id="mass-habit-text" class="form-control" style="min-height: 160px; font-family: monospace; font-size: 0.9rem;" placeholder="Contoh:&#10;Shalat Subuh Berjamaah di Mesjid&#10;Minum Air Putih 2.5 Liter&#10;Berjalan Pagi 30 Menit&#10;Membaca Buku 20 Halaman&#10;Afirmasi & Meditasi Pagi"></textarea>
+              <small style="color: var(--text-dim); margin-top: 4px; display: block;">
+                Tulis atau paste nama-nama habit yang ingin Anda tambahkan sekaligus. Setiap baris baru akan menjadi 1 habit harian terpisah.
+              </small>
+            </div>
+
+            <div style="background: rgba(15, 23, 42, 0.5); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-glass); margin-bottom: 16px;">
+              <label style="font-weight: 700; color: #38bdf8; display: block; margin-bottom: 8px;">📂 Atau Upload File (TXT / CSV / JSON)</label>
+              <input type="file" id="mass-habit-file" accept=".txt,.csv,.json" class="form-control" style="font-size: 0.85rem;" />
+            </div>
+
+            <div class="grid-2" style="gap: 12px;">
+              <div class="form-group">
+                <label>Kategori Default Semua Habit</label>
+                <select id="mass-habit-category" class="form-control" required>
+                  <option value="spiritual">Spiritual Habit</option>
+                  <option value="health">Physical / Health Habit</option>
+                  <option value="career">Intellectual / Career</option>
+                  <option value="personal">Emotional / Personal</option>
+                  <option value="finance">Keuangan</option>
+                  <option value="creativity">Creativity / Custom</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Target Durasi Default (Menit)</label>
+                <select id="mass-habit-duration" class="form-control" required>
+                  <option value="5">5 Menit</option>
+                  <option value="10">10 Menit</option>
+                  <option value="15" selected>15 Menit</option>
+                  <option value="20">20 Menit</option>
+                  <option value="30">30 Menit</option>
+                  <option value="60">60 Menit</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Tautkan ke Goal Utama (Opsional)</label>
+              <select id="mass-habit-goal-id" class="form-control">
+                <option value="">-- Mandiri / Standalone --</option>
+                ${goals.map(g => `<option value="${g.id}">${g.title} (${g.category})</option>`).join('')}
+              </select>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+              <button type="button" class="btn btn-secondary close-btn">Batal</button>
+              <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #059669, #34d399);">
+                <i data-lucide="upload-cloud"></i> Tambahkan Semua Habit
+              </button>
+            </div>
+          </form>
+        `;
+        openModal(html);
+
+        const fileInput = document.getElementById('mass-habit-file');
+        const textInput = document.getElementById('mass-habit-text');
+
+        fileInput?.addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const content = event.target.result;
+            if (file.name.endsWith('.json')) {
+              try {
+                const parsed = JSON.parse(content);
+                if (Array.isArray(parsed)) {
+                  textInput.value = parsed.map(item => typeof item === 'string' ? item : item.title).filter(Boolean).join('\n');
+                } else if (parsed.habits && Array.isArray(parsed.habits)) {
+                  textInput.value = parsed.habits.map(item => typeof item === 'string' ? item : item.title).filter(Boolean).join('\n');
+                }
+              } catch (err) {
+                alert('Gagal membaca file JSON: ' + err.message);
+              }
+            } else {
+              textInput.value = content;
+            }
+          };
+          reader.readAsText(file);
+        });
+
+        document.getElementById('form-mass-habit')?.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const rawText = textInput.value;
+          const category = document.getElementById('mass-habit-category').value;
+          const durationMinutes = parseInt(document.getElementById('mass-habit-duration').value, 10) || 15;
+          const goalId = document.getElementById('mass-habit-goal-id').value;
+
+          const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+          if (lines.length === 0) {
+            alert('Silakan tuliskan atau paste minimal 1 nama habit!');
+            return;
+          }
+
+          const currentHabits = Storage.getHabits();
+          const now = Date.now();
+          let countAdded = 0;
+
+          lines.forEach((line, index) => {
+            const cleanTitle = line.replace(/^[\d\.\-\*\•\s]+/, '').trim();
+            if (cleanTitle) {
+              const newHabit = {
+                id: 'h-' + (now + index),
+                goalId: goalId,
+                title: cleanTitle,
+                implementationPlan: `Setiap hari, luangkan waktu ${durationMinutes} menit untuk ${cleanTitle}.`,
+                category: category,
+                durationMinutes: durationMinutes,
+                frequency: 'daily',
+                completedDates: []
+              };
+              currentHabits.push(newHabit);
+              countAdded++;
+            }
+          });
+
+          Storage.saveHabits(currentHabits);
+          closeModal();
+          fireConfetti();
+          alert(`✅ Berhasil menambahkan ${countAdded} habit baru sekaligus!`);
+          onSave();
+        });
       }
     };
   }
@@ -2896,6 +3044,7 @@
         if (action === 'open-goal-modal') this.modals.openGoalModal(payload);
         else if (action === 'open-subgoal-modal') this.modals.openSubGoalModal(payload);
         else if (action === 'open-habit-modal') this.modals.openHabitModal(payload);
+        else if (action === 'open-mass-habit-modal') this.modals.openMassHabitModal();
         else if (action === 'switch-tab') this.switchTab(payload);
         else if (action === 'render-current-tab') this.renderCurrentTab();
       };
