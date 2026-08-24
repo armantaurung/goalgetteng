@@ -120,14 +120,22 @@ input, textarea, select {
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease;
 }
 
-.brand {
+.logo-container {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 0 8px 24px 8px;
-  border-bottom: 1px solid var(--border-glass);
-  margin-bottom: 24px;
-  transition: all 0.3s ease;
+  flex-direction: row;
+  gap: 10px;
+}
+
+.brand-name {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 1.35rem;
+  background: var(--grad-orange);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .brand-logo {
