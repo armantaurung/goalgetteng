@@ -1,42 +1,22 @@
-/* GoalGetteng Service Worker - PWA Mobile App Support */
-const CACHE_NAME = 'goalgetteng-v2';
-const ASSETS_TO_CACHE = [
-  './',
-  './index.html',
-  './styles.css',
-  './app.js',
-  './manifest.json',
-  './icon-192.png',
-  './icon-512.png'
-];
+/* GoalGetteng Service Worker v3 - Force clear all old caches */
+const CACHE_NAME = 'goalgetteng-v3';
 
+// On install: immediately take over
 self.addEventListener('install', (e) => {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE).catch(err => console.log('Cache addAll error:', err));
-    })
-  );
   self.skipWaiting();
 });
 
+// On activate: delete ALL old caches
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      );
-    })
+      return Promise.all(keys.map((key) => caches.delete(key)));
+    }).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
+// Fetch: always go to network, never serve from cache
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
-  e.respondWith(
-    fetch(e.request).catch(() => caches.match(e.request))
-  );
+  e.respondWith(fetch(e.request));
 });
