@@ -2,11 +2,19 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>GoalGetteng 🎯</title>
   <meta name="description" content="Aplikasi web pelacak Goal Utama, Sub-Goal, dan Habit Harian dengan visualisasi Pohon Jeruk, Kalender 365 Hari, Integrasi Google Calendar, dan Cloud Sync HP-Laptop." />
   <meta name="theme-color" content="#0f172a" />
-  
+
+  <!-- PWA & Smartphone Native App Meta Tags -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="GoalGetteng" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+
   <!-- Modern Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -46,8 +54,12 @@
 
     <!-- Main View Content Area -->
     <main class="main-content">
-      <!-- Top Utility Header with Cloud Sync Status -->
-      <div style="display: flex; justify-content: flex-end; margin-bottom: 12px;">
+      <!-- Top Utility Header with Install PWA & Cloud Sync Status -->
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
+        <button class="btn btn-secondary" id="btn-install-pwa" style="padding: 6px 14px; font-size: 0.82rem; border-color: rgba(16, 185, 129, 0.4); color: #34d399; display: none;">
+          <i data-lucide="smartphone"></i> <span>📲 Pasang Aplikasi di HP</span>
+        </button>
+
         <button class="btn btn-secondary" id="btn-open-cloud-sync" style="padding: 6px 14px; font-size: 0.82rem; border-color: rgba(56, 189, 248, 0.4); color: #38bdf8;">
           <i data-lucide="cloud-lightning"></i> <span id="cloud-sync-status-text">☁️ Cloud Sync (HP ↔ Laptop)</span>
         </button>
@@ -89,6 +101,15 @@
       <span>Kalender</span>
     </button>
   </nav>
+
+  <!-- Register Service Worker for PWA -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW reg error:', err));
+      });
+    }
+  </script>
 
   <!-- Application Bundle -->
   <script src="app.js"></script>

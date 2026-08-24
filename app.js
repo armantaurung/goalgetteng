@@ -2230,7 +2230,46 @@
     });
 
     return {
-      openCloudSyncModal() {
+      openPWAHelpModal() {
+        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        const html = `
+          <div class="modal-header">
+            <h3>📲 Pasang GoalGetteng di Layar Utama HP</h3>
+            <button class="close-btn">&times;</button>
+          </div>
+          <div style="font-size: 0.9rem; line-height: 1.6; color: var(--text-muted);">
+            <p style="margin-bottom: 14px;">
+              Jadikan GoalGetteng seperti **Aplikasi HP Resmi (Native Standalone App)** yang langsung terbuka penuh tanpa bilah alamat browser saat ikonnya dipencet!
+            </p>
+            ${isIOS ? `
+              <div style="background: rgba(15, 23, 42, 0.6); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-glass); margin-bottom: 14px;">
+                <strong style="color: #38bdf8; display: block; margin-bottom: 6px;">📱 Petunjuk iPhone / iPad (Safari):</strong>
+                <ol style="margin-left: 18px; display: flex; flex-direction: column; gap: 6px;">
+                  <li>Tekan ikon <strong>Bagikan (Share)</strong> 📤 di bawah layar Safari.</li>
+                  <li>Pilih <strong>"Tambah ke Layar Utama" / "Add to Home Screen"</strong> ➕.</li>
+                  <li>Tekan <strong>"Tambah"</strong> di kanan atas.</li>
+                </ol>
+              </div>
+            ` : `
+              <div style="background: rgba(15, 23, 42, 0.6); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-glass); margin-bottom: 14px;">
+                <strong style="color: #34d399; display: block; margin-bottom: 6px;">📱 Petunjuk Android (Chrome / Edge / Opera):</strong>
+                <ol style="margin-left: 18px; display: flex; flex-direction: column; gap: 6px;">
+                  <li>Tekan menu <strong>Titik Tiga (⋮)</strong> di kanan atas browser.</li>
+                  <li>Pilih <strong>"Tambahkan ke Layar Utama" / "Install Aplikasi"</strong> 📲.</li>
+                  <li>Tekan <strong>"Instal"</strong>.</li>
+                </ol>
+              </div>
+            `}
+            <p style="font-size: 0.82rem; color: #a7f3d0; text-align: center; font-weight: 600;">
+              ✨ Ikon GoalGetteng akan muncul di Home Screen HP Anda & siap dibuka sekali sentuh!
+            </p>
+          </div>
+          <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+            <button type="button" class="btn btn-primary close-btn">Mengerti</button>
+          </div>
+        `;
+        openModal(html);
+      },
         const currentPin = CloudSync.getSyncPin();
         const isAutoSync = CloudSync.isAutoSyncEnabled();
 
@@ -2611,10 +2650,40 @@
       this.initSidebar();
       this.initSidebarToggle();
       this.initMobileNav();
+      this.initPWAInstall();
       this.initCloudSyncBar();
       this.initDailyAutoRefresh();
       this.initAutoCloudSyncTimer();
       this.renderCurrentTab();
+    }
+
+    initPWAInstall() {
+      let deferredPrompt;
+      const installBtn = document.getElementById('btn-install-pwa');
+
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (installBtn) installBtn.style.display = 'inline-flex';
+      });
+
+      installBtn?.addEventListener('click', async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === 'accepted') {
+            installBtn.style.display = 'none';
+          }
+          deferredPrompt = null;
+        } else {
+          this.modals.openPWAHelpModal();
+        }
+      });
+
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+      if (!isStandalone && installBtn && (window.innerWidth <= 768 || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent))) {
+        installBtn.style.display = 'inline-flex';
+      }
     }
 
     initSidebar() {
