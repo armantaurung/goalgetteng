@@ -1,5 +1,5 @@
 /* ==========================================================================
-   GoalForge - Unified Self-Contained Application Bundle
+   GoalGetteng - Unified Self-Contained Application Bundle
    (Compatible with direct file:// protocol in all web browsers)
    ========================================================================== */
 
@@ -167,7 +167,7 @@
       title: 'Menyusun Rencana & Jadwal Harian',
       category: 'career',
       durationMinutes: 10,
-      implementationPlan: 'Setiap jam 21:30 malam, luangkan 10 menit untuk merancang to-do list besok di aplikasi GoalForge.',
+      implementationPlan: 'Setiap jam 21:30 malam, luangkan 10 menit untuk merancang to-do list besok di aplikasi GoalGetteng.',
       frequency: 'daily',
       completedDates: [getTodayStr(-2), getTodayStr(-1)],
       color: '#3b82f6'
@@ -333,7 +333,7 @@
       const url = URL.createObjectURL(jsonBlob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `goalforge_backup_${getTodayStr(0)}.json`;
+      a.download = `goalgetteng_backup_${getTodayStr(0)}.json`;
       a.click();
       URL.revokeObjectURL(url);
     },
@@ -389,7 +389,7 @@
 
       const jsonString = encodeURIComponent(JSON.stringify(payload));
       try {
-        const url = `https://keyvalue.immanuel.co/api/KeyVal/Value/${encodeURIComponent(pin)}/goalforge_data/${jsonString}`;
+        const url = `https://keyvalue.immanuel.co/api/KeyVal/Value/${encodeURIComponent(pin)}/goalgetteng_data/${jsonString}`;
         const response = await fetch(url, { method: 'POST' });
         if (response.ok) {
           return { success: true, timestamp: payload.updatedAt };
@@ -405,7 +405,7 @@
       if (!pin) return { success: false, error: 'Silakan tentukan Kode PIN Sinkronisasi!' };
 
       try {
-        const url = `https://keyvalue.immanuel.co/api/KeyVal/GetValue/${encodeURIComponent(pin)}/goalforge_data`;
+        const url = `https://keyvalue.immanuel.co/api/KeyVal/GetValue/${encodeURIComponent(pin)}/goalgetteng_data`;
         const response = await fetch(url);
         if (response.ok) {
           const rawText = await response.json();
@@ -429,7 +429,7 @@
     getDirectEventUrl(habit, linkedGoalTitle = '') {
       const title = habit.title;
       const implPlan = habit.implementationPlan ? `\nRencana Implementasi: ${habit.implementationPlan}` : '';
-      const details = `Habit Harian dari GoalForge App.\nTarget Durasi: ${habit.durationMinutes || 15} Menit\nKategori: ${habit.category}${implPlan}\n${linkedGoalTitle ? 'Terkait Goal: ' + linkedGoalTitle : ''}`;
+      const details = `Habit Harian dari GoalGetteng App.\nTarget Durasi: ${habit.durationMinutes || 15} Menit\nKategori: ${habit.category}${implPlan}\n${linkedGoalTitle ? 'Terkait Goal: ' + linkedGoalTitle : ''}`;
       const recurrence = 'RRULE:FREQ=DAILY';
       
       const now = new Date();
@@ -446,10 +446,10 @@
       let icsContent = [
         'BEGIN:VCALENDAR',
         'VERSION:2.0',
-        'PRODID:-//GoalForge//Habit & Goal Tracker//ID',
+        'PRODID:-//GoalGetteng//Habit & Goal Tracker//ID',
         'CALSCALE:GREGORIAN',
         'METHOD:PUBLISH',
-        'X-WR-CALNAME:GoalForge Habits & Goals'
+        'X-WR-CALNAME:GoalGetteng Habits & Goals'
       ];
 
       const nowStr = new Date().toISOString().replace(/-|:|\.\d\d\d/g, '');
@@ -459,12 +459,12 @@
         const goalInfo = linkedGoal ? ` (Goal: ${linkedGoal.title})` : '';
         const implPlan = h.implementationPlan ? ` - Rencana: ${h.implementationPlan}` : '';
         icsContent.push('BEGIN:VEVENT');
-        icsContent.push(`UID:habit-${h.id || index}@goalforge.app`);
+        icsContent.push(`UID:habit-${h.id || index}@goalgetteng.app`);
         icsContent.push(`DTSTAMP:${nowStr}`);
         icsContent.push(`DTSTART:${nowStr.slice(0, 8)}T070000Z`);
         icsContent.push(`DTEND:${nowStr.slice(0, 8)}T073000Z`);
         icsContent.push(`SUMMARY:🎯 ${h.title}${goalInfo}`);
-        icsContent.push(`DESCRIPTION:Rutinitas harian GoalForge (${h.category}) - ${h.durationMinutes || 15} Menit${implPlan}`);
+        icsContent.push(`DESCRIPTION:Rutinitas harian GoalGetteng (${h.category}) - ${h.durationMinutes || 15} Menit${implPlan}`);
         icsContent.push('RRULE:FREQ=DAILY');
         icsContent.push('STATUS:CONFIRMED');
         icsContent.push('END:VEVENT');
@@ -474,12 +474,12 @@
         if (g.targetDate) {
           const dateClean = g.targetDate.replace(/-/g, '');
           icsContent.push('BEGIN:VEVENT');
-          icsContent.push(`UID:goal-${g.id}@goalforge.app`);
+          icsContent.push(`UID:goal-${g.id}@goalgetteng.app`);
           icsContent.push(`DTSTAMP:${nowStr}`);
           icsContent.push(`DTSTART;VALUE=DATE:${dateClean}`);
           icsContent.push(`DTEND;VALUE=DATE:${dateClean}`);
           icsContent.push(`SUMMARY:🚀 Target Selesai Goal: ${g.title}`);
-          icsContent.push(`DESCRIPTION:${g.description || 'Target Goal Utama GoalForge'}`);
+          icsContent.push(`DESCRIPTION:${g.description || 'Target Goal Utama GoalGetteng'}`);
           icsContent.push('STATUS:CONFIRMED');
           icsContent.push('END:VEVENT');
         }
@@ -491,7 +491,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `goalforge_calendar.ics`;
+      a.download = `goalgetteng_calendar.ics`;
       a.click();
       URL.revokeObjectURL(url);
     }
@@ -2205,7 +2205,7 @@
   }
 
   // =========================================================================
-  // 8. MODAL FORMS CONTROLLER (WITH CLOUD SYNC MODAL SUPPORT)
+  // 8. MODAL FORMS CONTROLLER
   // =========================================================================
   function setupModals(onSave) {
     const backdrop = document.getElementById('modal-backdrop');
