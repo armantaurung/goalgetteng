@@ -1,5 +1,5 @@
-/* GoalGetteng Service Worker - PWA Standalone Mobile Support */
-const CACHE_NAME = 'goalgetteng-v1';
+/* GoalGetteng Service Worker - PWA Mobile App Support */
+const CACHE_NAME = 'goalgetteng-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -13,7 +13,7 @@ const ASSETS_TO_CACHE = [
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
+      return cache.addAll(ASSETS_TO_CACHE).catch(err => console.log('Cache addAll error:', err));
     })
   );
   self.skipWaiting();
@@ -35,10 +35,8 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-  // Network first fallback to cache
+  if (e.request.method !== 'GET') return;
   e.respondWith(
-    fetch(e.request).catch(() => {
-      return caches.match(e.request);
-    })
+    fetch(e.request).catch(() => caches.match(e.request))
   );
 });
