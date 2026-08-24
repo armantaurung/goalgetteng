@@ -2270,6 +2270,8 @@
         `;
         openModal(html);
       },
+
+      openCloudSyncModal() {
         const currentPin = CloudSync.getSyncPin();
         const isAutoSync = CloudSync.isAutoSyncEnabled();
 
