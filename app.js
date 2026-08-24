@@ -1843,53 +1843,77 @@
     const habits = Storage.getHabits();
     const goals = Storage.getGoals();
     const todayStr = getTodayStr(0);
+    const today = new Date();
+    const currentYear = today.getFullYear();
 
-    const monthNames = [
-      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-    ];
+    const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
 
-    const year = calendarActiveYear;
-    const month = calendarActiveMonth;
+    // Build 365-day heatmap data for a given habit
+    function buildYearHeatmap(habit, year) {
+      const startDate = new Date(year, 0, 1);
+      const endDate = new Date(year, 11, 31);
+      const completedSet = new Set(habit.completedDates || []);
+      const weeks = [];
+      let currentWeek = [];
 
-    const firstDayIndex = new Date(year, month, 1).getDay();
-    // Shift Sunday (0) to 6 for Sen-Min calendar
-    const startingCol = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
-    const totalDaysInMonth = new Date(year, month + 1, 0).getDate();
+      // Pad first week with empty cells for alignment
+      const firstDayOfWeek = startDate.getDay(); // 0=Sun
+      const mondayOffset = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+      for (let i = 0; i < mondayOffset; i++) {
+        currentWeek.push(null);
+      }
 
-    // Previous month total days
-    const prevMonthDays = new Date(year, month, 0).getDate();
+      const d = new Date(startDate);
+      while (d <= endDate) {
+        const yy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        const dateStr = `${yy}-${mm}-${dd}`;
+        const isDone = completedSet.has(dateStr);
+        const isToday = dateStr === todayStr;
+        const isFuture = d > today;
 
-    const calendarCells = [];
+        currentWeek.push({ dateStr, isDone, isToday, isFuture, day: d.getDate(), month: d.getMonth() });
 
-    // 1. Previous Month Leading Days
-    for (let i = startingCol - 1; i >= 0; i--) {
-      const dayNum = prevMonthDays - i;
-      const prevDate = new Date(year, month - 1, dayNum);
-      const dateStr = prevDate.toISOString().split('T')[0];
-      calendarCells.push({ dayNum, dateStr, isOtherMonth: true });
+        if (currentWeek.length === 7) {
+          weeks.push(currentWeek);
+          currentWeek = [];
+        }
+        d.setDate(d.getDate() + 1);
+      }
+      if (currentWeek.length > 0) {
+        while (currentWeek.length < 7) currentWeek.push(null);
+        weeks.push(currentWeek);
+      }
+
+      return weeks;
     }
 
-    // 2. Current Month Days
-    for (let d = 1; d <= totalDaysInMonth; d++) {
-      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-      calendarCells.push({ dayNum: d, dateStr, isOtherMonth: false });
+    // Count completions for a habit in this year
+    function countYearCompletions(habit, year) {
+      if (!habit.completedDates) return 0;
+      return habit.completedDates.filter(d => d.startsWith(String(year))).length;
     }
 
-    // 3. Next Month Trailing Days to complete 35 or 42 grid slots
-    const totalSlots = calendarCells.length > 35 ? 42 : 35;
-    const remainingSlots = totalSlots - calendarCells.length;
-    for (let i = 1; i <= remainingSlots; i++) {
-      const nextDate = new Date(year, month + 1, i);
-      const dateStr = nextDate.toISOString().split('T')[0];
-      calendarCells.push({ dayNum: i, dateStr, isOtherMonth: true });
+    // Render month labels positioned above the heatmap columns
+    function renderMonthLabels(year) {
+      const labels = [];
+      for (let m = 0; m < 12; m++) {
+        const firstOfMonth = new Date(year, m, 1);
+        const startOfYear = new Date(year, 0, 1);
+        const dayOfYear = Math.floor((firstOfMonth - startOfYear) / (1000 * 60 * 60 * 24));
+        const startDow = startOfYear.getDay() === 0 ? 6 : startOfYear.getDay() - 1;
+        const weekIndex = Math.floor((dayOfYear + startDow) / 7);
+        labels.push(`<span class="heatmap-month-label" style="grid-column: ${weekIndex + 1};">${monthLabels[m]}</span>`);
+      }
+      return labels.join('');
     }
 
     container.innerHTML = `
       <div class="header-bar">
         <div class="page-title">
-          <h1>Kalender Rutinitas Real-time 📅</h1>
-          <p>Pantau seluruh kebiasaan Anda dalam kalender penuh. Klik habit pada tanggal tertentu untuk mencentang/membatalkannya secara langsung!</p>
+          <h1>Kalender Rutinitas 365 Hari 📅</h1>
+          <p>Klik setiap habit untuk melihat heatmap perkembangan setahun penuh. Klik kotak tanggal untuk mencentang/membatalkan.</p>
         </div>
         <div class="header-actions">
           <button class="btn btn-primary" id="btn-add-habit-cal">
@@ -1898,104 +1922,135 @@
         </div>
       </div>
 
-      <!-- Month Header Controls -->
-      <div class="full-calendar-header">
-        <div class="calendar-month-title">
-          <i data-lucide="calendar" style="color: #ff9f43;"></i>
-          <span>${monthNames[month]} ${year}</span>
+      ${habits.length === 0 ? `
+        <div class="glass-card" style="text-align: center; padding: 60px 20px;">
+          <div style="font-size: 3rem; margin-bottom: 16px;">📅</div>
+          <p style="color: var(--text-muted); font-size: 1rem;">Belum ada habit. Tambahkan habit pertama Anda untuk melihat kalender rutinitas!</p>
         </div>
-        <div style="display: flex; gap: 10px;">
-          <button class="btn btn-secondary" id="btn-cal-prev" style="padding: 8px 14px;">
-            <i data-lucide="chevron-left"></i> Sebelum
-          </button>
-          <button class="btn btn-secondary" id="btn-cal-today" style="padding: 8px 14px;">
-            Hari Ini
-          </button>
-          <button class="btn btn-secondary" id="btn-cal-next" style="padding: 8px 14px;">
-            Sesudah <i data-lucide="chevron-right"></i>
-          </button>
-        </div>
-      </div>
+      ` : habits.map((h, idx) => {
+        const streak = Storage.calculateHabitStreak(h);
+        const linkedGoal = goals.find(g => g.id === h.goalId);
+        const yearCompletions = countYearCompletions(h, currentYear);
+        const weeks = buildYearHeatmap(h, currentYear);
+        const habitColor = h.color || '#6366f1';
+        const isDoneToday = h.completedDates && h.completedDates.includes(todayStr);
 
-      <!-- Weekday Headers -->
-      <div class="calendar-weekdays-row">
-        <div>Senin</div>
-        <div>Selasa</div>
-        <div>Rabu</div>
-        <div>Kamis</div>
-        <div>Jumat</div>
-        <div>Sabtu</div>
-        <div>Minggu</div>
-      </div>
+        return `
+          <div class="glass-card habit-year-card" style="margin-bottom: 20px; overflow: hidden;">
+            <!-- Habit Header Row -->
+            <div class="habit-year-header" data-idx="${idx}" style="cursor: pointer;">
+              <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;">
+                <div style="width: 6px; height: 44px; border-radius: 4px; background: ${habitColor}; flex-shrink: 0;"></div>
+                <div style="flex: 1; min-width: 0;">
+                  <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <span style="font-weight: 700; font-size: 1rem; color: var(--text-main);">${h.title}</span>
+                    <span class="badge badge-${h.category}" style="font-size: 0.7rem;">${h.category}</span>
+                    ${isDoneToday ? '<span style="font-size: 0.75rem; color: #34d399; font-weight: 600;">✓ Hari Ini</span>' : ''}
+                  </div>
+                  <div style="display: flex; gap: 14px; margin-top: 4px; flex-wrap: wrap;">
+                    ${linkedGoal ? `<span style="font-size: 0.75rem; color: var(--text-dim);">🎯 ${linkedGoal.title}</span>` : ''}
+                    <span style="font-size: 0.75rem; color: #fbbf24;">🔥 Streak: ${streak.current} hari</span>
+                    <span style="font-size: 0.75rem; color: #38bdf8;">📊 ${yearCompletions} hari di ${currentYear}</span>
+                  </div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                <button class="btn-toggle-cal-today" data-id="${h.id}" title="${isDoneToday ? 'Batalkan hari ini' : 'Centang hari ini'}" style="width: 36px; height: 36px; border-radius: 50%; border: 2px solid ${isDoneToday ? '#34d399' : 'var(--border-glass)'}; background: ${isDoneToday ? 'rgba(16,185,129,0.2)' : 'transparent'}; color: ${isDoneToday ? '#34d399' : 'var(--text-dim)'}; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                  ${isDoneToday ? '✓' : '○'}
+                </button>
+                <i data-lucide="chevron-down" class="habit-year-chevron" data-idx="${idx}" style="color: var(--text-dim); width: 20px; height: 20px; transition: transform 0.3s;"></i>
+              </div>
+            </div>
 
-      <!-- Full Month Grid -->
-      <div class="calendar-month-grid">
-        ${calendarCells.map(cell => {
-          const isToday = cell.dateStr === todayStr;
-          const completedHabitsOnDate = habits.filter(h => h.completedDates && h.completedDates.includes(cell.dateStr));
-          const completedCount = completedHabitsOnDate.length;
-          const totalHabits = habits.length;
-          const isPerfect = totalHabits > 0 && completedCount === totalHabits && !cell.isOtherMonth;
-
-          return `
-            <div class="calendar-day-cell ${cell.isOtherMonth ? 'other-month' : ''} ${isToday ? 'today' : ''} ${isPerfect ? 'perfect-day' : ''}">
-              <div class="day-cell-header">
-                <div class="day-number">${cell.dayNum}</div>
-                <div class="day-completion-badge">
-                  ${isPerfect ? '🍊 100%' : `${completedCount}/${totalHabits}`}
+            <!-- Expandable Year Heatmap -->
+            <div class="habit-year-heatmap-wrap" data-idx="${idx}" style="display: none; padding-top: 16px; border-top: 1px solid var(--border-glass); margin-top: 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">${currentYear} — Heatmap Perkembangan</span>
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--text-dim);">
+                  <span>Kosong</span>
+                  <span class="heatmap-legend-cell" style="background: rgba(255,255,255,0.06);"></span>
+                  <span class="heatmap-legend-cell" style="background: ${habitColor}; opacity: 0.4;"></span>
+                  <span class="heatmap-legend-cell" style="background: ${habitColor}; opacity: 0.7;"></span>
+                  <span class="heatmap-legend-cell" style="background: ${habitColor};"></span>
+                  <span>Selesai</span>
                 </div>
               </div>
 
-              <div class="day-habits-list">
-                ${habits.map(h => {
-                  const isDone = h.completedDates && h.completedDates.includes(cell.dateStr);
-                  return `
-                    <div class="calendar-habit-pill ${isDone ? 'done' : ''} btn-toggle-cal-habit" 
-                         data-habit-id="${h.id}" 
-                         data-date="${cell.dateStr}" 
-                         title="${h.title} (${isDone ? 'Selesai' : 'Belum Selesai'})">
-                      <span style="font-size: 0.7rem;">${isDone ? '✓' : '○'}</span>
-                      <span style="flex: 1; overflow: hidden; text-overflow: ellipsis;">${h.title}</span>
+              <!-- Month Labels -->
+              <div class="heatmap-month-row">
+                ${renderMonthLabels(currentYear)}
+              </div>
+
+              <!-- Heatmap Grid -->
+              <div class="heatmap-grid-container">
+                <div class="heatmap-day-labels">
+                  <span>Sen</span><span></span><span>Rab</span><span></span><span>Jum</span><span></span><span>Min</span>
+                </div>
+                <div class="heatmap-weeks-grid">
+                  ${weeks.map(week => `
+                    <div class="heatmap-week-col">
+                      ${week.map(cell => {
+                        if (!cell) return '<div class="heatmap-cell empty"></div>';
+                        const cls = cell.isDone ? 'done' : (cell.isFuture ? 'future' : 'miss');
+                        const todayCls = cell.isToday ? ' heatmap-today' : '';
+                        const bgStyle = cell.isDone ? `background: ${habitColor};` : '';
+                        return `<div class="heatmap-cell ${cls}${todayCls} btn-toggle-heatmap-day" data-habit-id="${h.id}" data-date="${cell.dateStr}" title="${cell.dateStr}${cell.isDone ? ' ✓ Selesai' : ''}" style="${bgStyle}"></div>`;
+                      }).join('')}
                     </div>
-                  `;
-                }).join('')}
+                  `).join('')}
+                </div>
               </div>
             </div>
-          `;
-        }).join('')}
-      </div>
+          </div>
+        `;
+      }).join('')}
     `;
 
+    // Event: Add habit
     container.querySelector('#btn-add-habit-cal')?.addEventListener('click', () => onAction('open-habit-modal'));
 
-    container.querySelector('#btn-cal-prev')?.addEventListener('click', () => {
-      calendarActiveMonth--;
-      if (calendarActiveMonth < 0) {
-        calendarActiveMonth = 11;
-        calendarActiveYear--;
-      }
-      renderFullCalendarView(container, onAction);
+    // Event: Toggle expand/collapse each habit heatmap
+    container.querySelectorAll('.habit-year-header').forEach(header => {
+      header.addEventListener('click', (e) => {
+        if (e.target.closest('.btn-toggle-cal-today')) return;
+        const idx = header.dataset.idx;
+        const wrap = container.querySelector(`.habit-year-heatmap-wrap[data-idx="${idx}"]`);
+        const chevron = container.querySelector(`.habit-year-chevron[data-idx="${idx}"]`);
+        if (wrap) {
+          const isOpen = wrap.style.display !== 'none';
+          wrap.style.display = isOpen ? 'none' : 'block';
+          if (chevron) chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
+        }
+      });
     });
 
-    container.querySelector('#btn-cal-next')?.addEventListener('click', () => {
-      calendarActiveMonth++;
-      if (calendarActiveMonth > 11) {
-        calendarActiveMonth = 0;
-        calendarActiveYear++;
-      }
-      renderFullCalendarView(container, onAction);
-    });
-
-    container.querySelector('#btn-cal-today')?.addEventListener('click', () => {
-      calendarActiveYear = new Date().getFullYear();
-      calendarActiveMonth = new Date().getMonth();
-      renderFullCalendarView(container, onAction);
-    });
-
-    container.querySelectorAll('.btn-toggle-cal-habit').forEach(pill => {
-      pill.addEventListener('click', (e) => {
+    // Event: Toggle today checkbox
+    container.querySelectorAll('.btn-toggle-cal-today').forEach(btn => {
+      btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const { habitId, date } = pill.dataset;
+        const habitId = btn.dataset.id;
+        const currentHabits = Storage.getHabits();
+        const h = currentHabits.find(item => item.id === habitId);
+        if (h) {
+          if (!h.completedDates) h.completedDates = [];
+          const idx = h.completedDates.indexOf(todayStr);
+          if (idx > -1) {
+            h.completedDates.splice(idx, 1);
+          } else {
+            h.completedDates.push(todayStr);
+            fireConfetti();
+          }
+          Storage.saveHabits(currentHabits);
+          renderFullCalendarView(container, onAction);
+        }
+      });
+    });
+
+    // Event: Toggle individual heatmap day
+    container.querySelectorAll('.btn-toggle-heatmap-day').forEach(cell => {
+      cell.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const { habitId, date } = cell.dataset;
         const currentHabits = Storage.getHabits();
         const h = currentHabits.find(item => item.id === habitId);
         if (h) {
