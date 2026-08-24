@@ -449,7 +449,7 @@
         'PRODID:-//GoalGetteng//Habit & Goal Tracker//ID',
         'CALSCALE:GREGORIAN',
         'METHOD:PUBLISH',
-        'X-WR-CALNAME:GoalGetteng Habits & Goals'
+        'X-WR-CALNAME:GoalGetteng Goal & Habit Tracker'
       ];
 
       const nowStr = new Date().toISOString().replace(/-|:|\.\d\d\d/g, '');
