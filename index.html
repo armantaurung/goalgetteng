@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GoalForge - Pelacak Goal & Habit Harian</title>
+  <meta name="description" content="Aplikasi pelacak goal utama, milestone kecil, dan kebiasaan harian dengan estetika glassmorphism modern." />
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎯</text></svg>" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Canvas Confetti for Celebrations -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+  <!-- Custom Glassmorphism Styling -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">
+          <i data-lucide="target" style="width: 24px; height: 24px;"></i>
+        </div>
+        <div class="brand-title">GoalForge</div>
+        <button class="btn-toggle-sidebar" id="btn-toggle-sidebar" title="Perkecil / Perbesar Menu Sidebar" style="margin-left: auto;">
+          <i data-lucide="chevron-left" id="sidebar-toggle-icon" style="width: 18px; height: 18px;"></i>
+        </button>
+      </div>
+
+      <nav class="nav-menu" id="sidebar-nav" aria-label="Navigasi Utama">
+        <!-- Rendered by JS -->
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="quick-stats-box">
+          <div class="quick-stats-val" id="quick-stats-val">0/0</div>
+          <div class="quick-stats-lbl">Habit Hari Ini</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main View Content -->
+    <main class="main-content" id="view-content">
+      <!-- Views rendered dynamically by JS -->
+    </main>
+  </div>
+
+  <!-- Global Modal Popup Container -->
+  <div class="modal-backdrop" id="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-card" id="modal-card-content">
+      <!-- Modal form content rendered by JS -->
+    </div>
+  </div>
+
+  <!-- Main JavaScript App -->
+  <script src="app.js"></script>
+</body>
+</html>
