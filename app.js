@@ -396,14 +396,22 @@
         updatedAt: new Date().toISOString()
       };
 
-      const jsonString = encodeURIComponent(JSON.stringify(payload));
       try {
-        const url = `https://keyvalue.immanuel.co/api/KeyVal/Value/${encodeURIComponent(pin)}/goalgetteng_data/${jsonString}`;
-        const response = await fetch(url, { method: 'POST' });
+        const topic = `goalgetteng_sync_${encodeURIComponent(pin)}`;
+        const response = await fetch(`https://ntfy.sh/${topic}`, {
+          method: 'POST',
+          headers: {
+            'Title': 'GoalGetteng Cloud Sync',
+            'Tags': 'cloud,sync',
+            'Cache': 'yes'
+          },
+          body: JSON.stringify(payload)
+        });
+
         if (response.ok) {
           return { success: true, timestamp: payload.updatedAt };
         }
-        return { success: false, error: 'Gagal merespons server cloud.' };
+        return { success: false, error: 'Gagal merespons server cloud (Status: ' + response.status + ')' };
       } catch (e) {
         return { success: false, error: e.message };
       }
@@ -414,16 +422,30 @@
       if (!pin) return { success: false, error: 'Silakan tentukan Kode PIN Sinkronisasi!' };
 
       try {
-        const url = `https://keyvalue.immanuel.co/api/KeyVal/GetValue/${encodeURIComponent(pin)}/goalgetteng_data`;
-        const response = await fetch(url);
+        const topic = `goalgetteng_sync_${encodeURIComponent(pin)}`;
+        const response = await fetch(`https://ntfy.sh/${topic}/json?poll=1`);
         if (response.ok) {
-          const rawText = await response.json();
-          if (rawText && typeof rawText === 'string') {
-            const decodedPayload = JSON.parse(decodeURIComponent(rawText));
-            if (decodedPayload.goals && decodedPayload.habits) {
-              Storage.saveGoals(decodedPayload.goals, false);
-              Storage.saveHabits(decodedPayload.habits, false);
-              return { success: true, data: decodedPayload };
+          const text = await response.text();
+          if (text) {
+            const lines = text.trim().split('\n').filter(Boolean);
+            let latestPayload = null;
+            for (let i = lines.length - 1; i >= 0; i--) {
+              try {
+                const msgObj = JSON.parse(lines[i]);
+                if (msgObj.message) {
+                  const dataObj = JSON.parse(msgObj.message);
+                  if (dataObj.goals && dataObj.habits) {
+                    latestPayload = dataObj;
+                    break;
+                  }
+                }
+              } catch (parseErr) {}
+            }
+
+            if (latestPayload) {
+              Storage.saveGoals(latestPayload.goals, false);
+              Storage.saveHabits(latestPayload.habits, false);
+              return { success: true, data: latestPayload };
             }
           }
         }
