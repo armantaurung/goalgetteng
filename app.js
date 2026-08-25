@@ -361,11 +361,6 @@
   // =========================================================================
   const CloudSync = {
     getSyncPin() {
-      return localStorage.getItem(STORAGE_KEYS.CLOUD_SYNC_PIN) || '';
-    },
-
-  const CloudSync = {
-    getSyncPin() {
       let pin = localStorage.getItem(STORAGE_KEYS.CLOUD_SYNC_PIN);
       if (!pin) {
         pin = 'armant';
