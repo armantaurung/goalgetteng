@@ -403,7 +403,7 @@
           headers: {
             'Title': 'GoalGetteng Cloud Sync',
             'Tags': 'cloud,sync',
-            'Cache': 'yes'
+            'X-Cache': 'yes'
           },
           body: JSON.stringify(payload)
         });
@@ -426,15 +426,15 @@
         const response = await fetch(`https://ntfy.sh/${topic}/json?poll=1`);
         if (response.ok) {
           const text = await response.text();
-          if (text) {
+          if (text && text.trim().length > 0) {
             const lines = text.trim().split('\n').filter(Boolean);
             let latestPayload = null;
             for (let i = lines.length - 1; i >= 0; i--) {
               try {
                 const msgObj = JSON.parse(lines[i]);
                 if (msgObj.message) {
-                  const dataObj = JSON.parse(msgObj.message);
-                  if (dataObj.goals && dataObj.habits) {
+                  const dataObj = typeof msgObj.message === 'string' ? JSON.parse(msgObj.message) : msgObj.message;
+                  if (dataObj && dataObj.goals && dataObj.habits) {
                     latestPayload = dataObj;
                     break;
                   }
@@ -449,7 +449,7 @@
             }
           }
         }
-        return { success: false, error: 'Belum ada data tersimpan di Cloud untuk PIN ini.' };
+        return { success: false, error: 'Belum ada data tersimpan di Cloud untuk PIN ini. Silakan klik "Upload Ke Cloud" di perangkat pengirim terlebih dahulu.' };
       } catch (e) {
         return { success: false, error: e.message };
       }
