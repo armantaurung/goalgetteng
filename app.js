@@ -364,14 +364,27 @@
       return localStorage.getItem(STORAGE_KEYS.CLOUD_SYNC_PIN) || '';
     },
 
+  const CloudSync = {
+    getSyncPin() {
+      let pin = localStorage.getItem(STORAGE_KEYS.CLOUD_SYNC_PIN);
+      if (!pin) {
+        pin = 'armant';
+        this.setSyncPin(pin);
+        this.setAutoSyncEnabled(true);
+      }
+      return pin;
+    },
+
     setSyncPin(pin) {
-      const cleanPin = pin.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+      const cleanPin = (pin || 'armant').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
       localStorage.setItem(STORAGE_KEYS.CLOUD_SYNC_PIN, cleanPin);
       return cleanPin;
     },
 
     isAutoSyncEnabled() {
-      return localStorage.getItem(STORAGE_KEYS.AUTO_SYNC_ENABLED) === 'true';
+      const val = localStorage.getItem(STORAGE_KEYS.AUTO_SYNC_ENABLED);
+      if (val === null) return true;
+      return val === 'true';
     },
 
     setAutoSyncEnabled(enabled) {
@@ -2338,27 +2351,41 @@
       openCloudSyncModal() {
         const currentPin = CloudSync.getSyncPin();
         const isAutoSync = CloudSync.isAutoSyncEnabled();
+        const directSyncUrl = `https://armantaurung.github.io/goalgetteng/?pin=${currentPin}`;
+        const qrCodeApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(directSyncUrl)}`;
 
         const html = `
           <div class="modal-header">
-            <h3>Sinkronisasi Data Cloud Real-time ☁️📱💻</h3>
+            <h3>Sinkronisasi Data Real-time (HP ↔ Laptop) 📱💻☁️</h3>
             <button class="close-btn">&times;</button>
           </div>
-          <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5;">
-            Hubungkan HP dan Laptop Anda secara langsung! Cukup masukkan **Kode PIN Rahasia** yang sama di HP dan Laptop Anda.
-          </p>
+          
+          <div style="background: rgba(15, 23, 42, 0.6); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-glass); margin-bottom: 20px; text-align: center;">
+            <strong style="color: #34d399; font-size: 0.95rem; display: block; margin-bottom: 8px;">📱 CARA TERMUDAH: Pindai (Scan) QR Code Ini Menggunakan Kamera HP Anda!</strong>
+            <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">
+              Arahkan kamera HP Anda ke gambar QR Code di bawah. HP Anda akan langsung terhubung & tersinkronisasi secara otomatis!
+            </p>
+            <div style="background: #ffffff; padding: 10px; display: inline-block; border-radius: var(--radius-md); box-shadow: 0 8px 24px rgba(0,0,0,0.4);">
+              <img src="${qrCodeApiUrl}" alt="QR Code Sinkronisasi HP" style="width: 160px; height: 160px; display: block;" />
+            </div>
+            <div style="margin-top: 10px;">
+              <button type="button" class="btn btn-secondary" id="btn-copy-sync-link" style="padding: 6px 14px; font-size: 0.8rem; border-color: rgba(56, 189, 248, 0.4); color: #38bdf8;">
+                <i data-lucide="copy"></i> Salin Link Sinkronisasi HP
+              </button>
+            </div>
+          </div>
 
           <form id="form-cloud-sync">
             <div class="form-group">
-              <label>Kode PIN / Ruangan Sinkronisasi Anda</label>
+              <label>Kode PIN Ruangan Sinkronisasi Anda</label>
               <div style="display: flex; gap: 8px;">
-                <input type="text" id="sync-pin-input" class="form-control" placeholder="Contoh: armant2026" value="${currentPin}" required style="font-weight: 700; letter-spacing: 0.05em; color: #38bdf8;" />
-                <button type="button" class="btn btn-secondary" id="btn-generate-pin" title="Buat PIN Acak">
-                  <i data-lucide="sparkles"></i> Buat PIN
+                <input type="text" id="sync-pin-input" class="form-control" placeholder="Contoh: armant" value="${currentPin}" required style="font-weight: 700; letter-spacing: 0.05em; color: #38bdf8;" />
+                <button type="button" class="btn btn-secondary" id="btn-generate-pin" title="Buat PIN Acak Baru">
+                  <i data-lucide="sparkles"></i> Buat PIN Baru
                 </button>
               </div>
               <small style="color: var(--text-dim); margin-top: 4px; display: block;">
-                Gunakan Kode PIN yang sama di HP Anda agar data otomatis tersinkron.
+                PIN default Anda adalah <strong style="color: #34d399;">${currentPin}</strong>. Gunakan PIN ini di HP & Laptop Anda.
               </small>
             </div>
 
@@ -2366,19 +2393,19 @@
               <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 0;">
                 <input type="checkbox" id="chk-auto-sync" ${isAutoSync ? 'checked' : ''} style="width: 18px; height: 18px; accent-color: #38bdf8;" />
                 <div>
-                  <strong style="color: var(--text-main); display: block; font-size: 0.95rem;">🔄 Auto-Sync Realtime (Tiap 15 Detik)</strong>
-                  <span style="color: var(--text-dim); font-size: 0.8rem;">Otomatis mengunggah centang baru dan menarik update dari HP / Laptop.</span>
+                  <strong style="color: var(--text-main); display: block; font-size: 0.95rem;">🔄 Auto-Sync Otomatis 2 Arah (Setiap 5 Detik)</strong>
+                  <span style="color: var(--text-dim); font-size: 0.8rem;">Setiap kali Anda men-centang habit di HP atau Laptop, data akan langsung tersinkronisasi.</span>
                 </div>
               </label>
             </div>
 
             <div style="display: flex; gap: 10px; margin-top: 24px; flex-wrap: wrap;">
               <button type="button" class="btn btn-primary" id="btn-sync-upload" style="flex: 1; justify-content: center; background: linear-gradient(135deg, #0284c7, #38bdf8);">
-                <i data-lucide="upload-cloud"></i> Upload Ke Cloud
+                <i data-lucide="upload-cloud"></i> Upload Ke Cloud Sekarang
               </button>
 
               <button type="button" class="btn btn-primary" id="btn-sync-download" style="flex: 1; justify-content: center; background: linear-gradient(135deg, #059669, #34d399);">
-                <i data-lucide="download-cloud"></i> Download Dari Cloud
+                <i data-lucide="download-cloud"></i> Ambil Data Dari Cloud
               </button>
             </div>
 
@@ -2394,6 +2421,11 @@
         const pinInput = document.getElementById('sync-pin-input');
         const autoSyncChk = document.getElementById('chk-auto-sync');
         const msgStatus = document.getElementById('sync-msg-status');
+
+        document.getElementById('btn-copy-sync-link')?.addEventListener('click', () => {
+          navigator.clipboard.writeText(directSyncUrl);
+          alert('✅ Link sinkronisasi tersalin! Kirimkan ke HP Anda atau buka di browser HP.');
+        });
 
         document.getElementById('btn-generate-pin')?.addEventListener('click', () => {
           const randomPin = 'armant-' + Math.floor(1000 + Math.random() * 9000);
@@ -2860,7 +2892,22 @@
       this.initCloudSyncBar();
       this.initDailyAutoRefresh();
       this.initAutoCloudSyncTimer();
-      this.renderCurrentTab();
+
+      // Check for URL parameter ?pin= (e.g. from QR Code scan on phone)
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlPin = urlParams.get('pin') || urlParams.get('sync_pin');
+      if (urlPin) {
+        CloudSync.setSyncPin(urlPin);
+        CloudSync.setAutoSyncEnabled(true);
+        CloudSync.downloadFromCloud().then(res => {
+          if (res.success) {
+            fireConfetti();
+          }
+          this.renderCurrentTab();
+        });
+      } else {
+        this.renderCurrentTab();
+      }
     }
 
     initPWAInstall() {
@@ -2986,7 +3033,7 @@
             this.renderCurrentTab();
           }
         }
-      }, 15000);
+      }, 5000);
     }
 
     updateToggleIcon(collapsed) {
